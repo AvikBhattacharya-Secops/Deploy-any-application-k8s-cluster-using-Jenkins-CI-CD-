@@ -15,14 +15,14 @@ pipeline {
         GITHUB_REPO = 'https://github.com/AvikBhattacharya-Secops/Deploy-any-application-k8s-cluster-using-Jenkins-CI-CD-.git'
         GIT_CREDENTIALS_ID = 'GitAccess'
 
-        // K8s (ArgoCD or Kubeconfig based) deployment
-        KUBECONFIG_CREDENTIALS_ID = 'argocd'
+        // Kubernetes kubeconfig credentials
+        KUBECONFIG_CREDENTIALS_ID = 'argocd1' // ✅ updated
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: "${GIT_CREDENTIALS_ID}", url: "${GITHUB_REPO}"
+                git credentialsId: "${GIT_CREDENTIALS_ID}", url: "${GITHUB_REPO}", branch: 'main'
             }
         }
 
@@ -48,12 +48,12 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
                     sh '''
-                        echo "Using kubeconfig at $KUBECONFIG"
+                        echo "✅ Using kubeconfig at $KUBECONFIG"
 
-                        # Replace image tag dynamically in k8s-deployment.yaml
+                        # Replace image tag in Kubernetes deployment YAML
                         sed -i "s|image: .*|image: avikbhattacharya056/my-calculator-image:${BUILD_NUMBER}|" k8s-deployment.yaml
 
-                        # Apply deployment
+                        # Apply the deployment
                         kubectl --kubeconfig=$KUBECONFIG apply -f k8s-deployment.yaml
                     '''
                 }
