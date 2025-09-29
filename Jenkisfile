@@ -16,7 +16,7 @@ pipeline {
         GIT_CREDENTIALS_ID = 'GitAccess'
 
         // K8s (ArgoCD or Kubeconfig based) deployment
-        KUBECONFIG_CREDENTIALS_ID = 'argocd'  // Assuming it's a file credential for Kubeconfig
+        KUBECONFIG_CREDENTIALS_ID = 'argocd'
     }
 
     stages {
@@ -29,7 +29,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${DOCKERHUB_REPO}:${IMAGE_TAG}")
+                    docker.build("${DOCKER_IMAGE}")
                 }
             }
         }
@@ -38,7 +38,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDENTIALS_ID}") {
-                        docker.image("${DOCKERHUB_REPO}:${IMAGE_TAG}").push()
+                        docker.image("${DOCKER_IMAGE}").push()
                     }
                 }
             }
@@ -49,6 +49,11 @@ pipeline {
                 withCredentials([file(credentialsId: "${KUBECONFIG_CREDENTIALS_ID}", variable: 'KUBECONFIG')]) {
                     sh '''
                         echo "Using kubeconfig at $KUBECONFIG"
+
+                        # Replace image tag dynamically in k8s-deployment.yaml
+                        sed -i "s|image: .*|image: avikbhattacharya056/my-calculator-image:${BUILD_NUMBER}|" k8s-deployment.yaml
+
+                        # Apply deployment
                         kubectl --kubeconfig=$KUBECONFIG apply -f k8s-deployment.yaml
                     '''
                 }
@@ -58,10 +63,10 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline completed successfully. Image pushed: ${DOCKER_IMAGE}"
+            echo "✅ Pipeline completed successfully. Image pushed: ${DOCKER_IMAGE}"
         }
         failure {
-            echo "Pipeline failed."
+            echo "❌ Pipeline failed."
         }
     }
 }
