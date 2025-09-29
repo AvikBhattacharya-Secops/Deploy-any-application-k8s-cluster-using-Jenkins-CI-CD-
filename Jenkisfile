@@ -12,7 +12,7 @@ pipeline {
         DOCKER_CREDENTIALS_ID = 'docker-hub-creds'
 
         // GitHub details
-        GITHUB_REPO = 'https://github.com/AvikBhattacharya-Secops/complete-project-all.git'
+        GITHUB_REPO = 'https://github.com/AvikBhattacharya-Secops/Deploy-any-application-k8s-cluster-using-Jenkins-CI-CD-.git'
         GIT_CREDENTIALS_ID = 'GitAccess'
 
         // K8s (ArgoCD or Kubeconfig based) deployment
